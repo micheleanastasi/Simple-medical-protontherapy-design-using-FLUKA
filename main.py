@@ -5,9 +5,11 @@ import scipy as sp
 
 energies = np.array(range(48,60+1)) #MeV
 yy = []
+xx = []
 
-# loading data (energies)
-dir = "dati_fluka_old"
+### LOADING DATA
+
+dir = "dati_fluka"
 fileList =[f for f in os.listdir(dir) if f.endswith(".dat")]
 
 i = 0
@@ -15,13 +17,12 @@ for file in fileList:
     path = os.path.join(dir, file)
 
     col = np.loadtxt(path,skiprows=1,usecols=2)
-    # loading data (xx)
+    # loading data (xx) - fetching info about num. of rows
     if i == 0:
         xx_1 = np.loadtxt(path,skiprows=1,usecols=0)
         xx_2 = np.loadtxt(path,skiprows=1,usecols=1)
         xx = (xx_1 + xx_2)/2
         rows = len(xx)
-        print(rows)
 
         #initialize array to fetch data
         yy = np.zeros([len(energies), rows])
@@ -30,33 +31,58 @@ for file in fileList:
 
 # GeV --> MeV
 yy = yy*10e3
+#print(np.argmax(yy[-1,:]))
 
-
-### calcs
+### CALCULATIONS
 
 #def
+a = 2000
+b = 3000
+yy_extr = yy[:,a:b]
+
 weights_0 = np.ones(len(energies))
 ref = np.max(yy[-1,:])
 
-yy_extr = yy[:,40*50:60*50]
 
 # plot
 yy_sum = np.sum(yy, axis=0)
 for i in range(len(energies)):
     plt.plot(xx,yy[i,:],lw='0.5')
-#plt.plot(xx, yy_sum)
+plt.vlines(a/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
+plt.vlines(b/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
+plt.title("Pristine Bragg Peaks + range used to get SOBP")
 plt.xlabel("[cm]")
 plt.ylabel("[MeV]")
 plt.show()
 
+# define functions to minimize peaks differences
 def resto(w):
     return (ref - np.sum(yy_extr * w[:, np.newaxis], axis=0))
-
 res = sp.optimize.least_squares( resto,weights_0 )
 wf = res.x
 print(wf)
 
-#wf[-1] = wf[-1]*0.1
-fun_final = yy*wf[:,np.newaxis]
-plt.plot(xx,np.sum(fun_final,axis=0),lw='0.5')
+# plotting
+yy = yy/ref # normalize to reference
+sobp = np.sum(yy * wf[:, np.newaxis],axis=0)
+
+plt.plot(xx, sobp, lw='0.5')
+plt.vlines(a/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
+plt.vlines(b/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
+plt.hlines(ref/ref,0,5,linestyles='dashdot',linewidth=0.5,colors="red")
+plt.title("SOBP")
+plt.xlabel("[cm]")
+plt.ylabel("Relative dose")
+plt.show()
+
+#OSS: about decreasing last weight: plot again
+wf[-1] = wf[-1]*0.1
+sobp_2 = np.sum(yy * wf[:, np.newaxis],axis=0)
+
+plt.vlines(a/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
+plt.vlines(b/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
+plt.plot(xx, sobp_2, lw='0.5')
+plt.title("SOBP + last weight reduced")
+plt.xlabel("[cm]")
+plt.ylabel("[MeV]")
 plt.show()
