@@ -7,7 +7,7 @@ energies = np.array(range(48,60+1)) #MeV
 yy = []
 
 # loading data (energies)
-dir = "dati_fluka"
+dir = "dati_fluka_old"
 fileList =[f for f in os.listdir(dir) if f.endswith(".dat")]
 
 i = 0
@@ -38,7 +38,7 @@ yy = yy*10e3
 weights_0 = np.ones(len(energies))
 ref = np.max(yy[-1,:])
 
-yy_extr = yy[:,40:60]
+yy_extr = yy[:,40*50:60*50]
 
 # plot
 yy_sum = np.sum(yy, axis=0)
