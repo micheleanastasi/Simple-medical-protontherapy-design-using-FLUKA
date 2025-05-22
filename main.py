@@ -52,7 +52,8 @@ plt.vlines(a/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
 plt.vlines(b/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
 plt.title("Pristine Bragg Peaks + range used to get SOBP")
 plt.xlabel("[cm]")
-plt.ylabel("[MeV]")
+plt.ylabel("[MeV/cm]")
+plt.savefig("saved_plots/pristinePeaks.png",dpi=300)
 plt.show()
 
 # define functions to minimize peaks differences
@@ -60,6 +61,7 @@ def resto(w):
     return (ref - np.sum(yy_extr * w[:, np.newaxis], axis=0))
 res = sp.optimize.least_squares( resto,weights_0 )
 wf = res.x
+print("Weights for the pristine peaks to get SOBP:")
 print(wf)
 
 # plotting
@@ -70,13 +72,22 @@ plt.plot(xx, sobp, lw='0.5')
 plt.vlines(a/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
 plt.vlines(b/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
 plt.hlines(ref/ref,0,5,linestyles='dashdot',linewidth=0.5,colors="red")
+
+yy_w = np.zeros([len(energies), len(xx)])
+for i in range(len(energies)):
+    yy_w = yy[i,:]*wf[i]
+    plt.plot(xx,yy_w[:,i],lw='0.5')
+
 plt.title("SOBP")
 plt.xlabel("[cm]")
 plt.ylabel("Relative dose")
+plt.savefig("saved_plots/sobp_1.png",dpi=300)
 plt.show()
 
 #OSS: about decreasing last weight: plot again
 wf[-1] = wf[-1]*0.1
+print("\nWeights but last one is decreased to 10%:")
+print(wf)
 sobp_2 = np.sum(yy * wf[:, np.newaxis],axis=0)
 
 plt.vlines(a/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
@@ -84,5 +95,6 @@ plt.vlines(b/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
 plt.plot(xx, sobp_2, lw='0.5')
 plt.title("SOBP + last weight reduced")
 plt.xlabel("[cm]")
-plt.ylabel("[MeV]")
+plt.ylabel("Relative dose")
+plt.savefig("saved_plots/sobp_2.png",dpi=300)
 plt.show()
