@@ -75,9 +75,9 @@ plt.hlines(ref/ref,0,5,linestyles='dashdot',linewidth=0.5,colors="red")
 
 yy_w = np.zeros([len(energies), len(xx)])
 for i in range(len(energies)):
-    yy_w = yy[i,:]*wf[i]
-    plt.plot(xx,yy_w[:,i],lw='0.5')
-
+    yy_w[i,:] = yy[i,:]*wf[i]
+for i in range(len(energies)):
+    plt.plot(xx, yy_w[i, :], lw='0.5')
 plt.title("SOBP")
 plt.xlabel("[cm]")
 plt.ylabel("Relative dose")
@@ -93,6 +93,13 @@ sobp_2 = np.sum(yy * wf[:, np.newaxis],axis=0)
 plt.vlines(a/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
 plt.vlines(b/1e3,0,np.max(yy),linestyles='dashdot',linewidth=0.5,colors="black")
 plt.plot(xx, sobp_2, lw='0.5')
+
+yy_w_2 = np.zeros([len(energies), len(xx)])
+for i in range(len(energies)):
+    yy_w_2[i,:] = yy[i,:]*wf[i]
+for i in range(len(energies)):
+    plt.plot(xx, yy_w_2[i, :], lw='0.5')
+
 plt.title("SOBP + last weight reduced")
 plt.xlabel("[cm]")
 plt.ylabel("Relative dose")
